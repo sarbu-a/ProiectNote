@@ -1,17 +1,28 @@
 #include <iostream>
-#include <vector>
-#include <string>
+#include "Student.h" // includem fisierul creat de mine
+
+using namespace std;
 
 void afiseazaMeniu() {
-    std::cout << "\n=========================================" << std::endl;
-    std::cout << "   SISTEM GESTIONARE NOTE STUDENTI      " << std::endl;
-    std::cout << "=========================================" << std::endl;
-    std::cout << "1. Adaugare nota (urmeaza)" << std::endl;
-    std::cout << "2. Iesire" << std::endl;
+    cout << "\n=== SISTEM GESTIONARE NOTE ===" << endl;
+    cout << "Aplicatia functioneaza!" << endl;
 }
 
 int main() {
     afiseazaMeniu();
-    std::cout << "\nProgramul ruleaza corect!" << std::endl;
+
+    // TEST: crearea unui student fictiv sa vedem dca merge clasa
+    cout << "\n--- Testare Clasa Student ---" << endl;
+    
+    Student s1("Popescu", "Ion");
+    s1.adaugaNota(8);
+    s1.adaugaNota(10);
+    s1.adaugaNota(9);
+    
+    // testare validarea (nota gresita)
+    s1.adaugaNota(15); 
+
+    s1.afiseazaSituatie();
+
     return 0;
 }
