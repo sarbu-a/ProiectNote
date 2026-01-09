@@ -1,28 +1,64 @@
 #include <iostream>
-#include "Student.h" // includem fisierul creat de mine
+#include <string>
+#include <limits> // Pentru curatarea bufferului
+#include "Catalog.h"
 
 using namespace std;
 
-void afiseazaMeniu() {
-    cout << "\n=== SISTEM GESTIONARE NOTE ===" << endl;
-    cout << "Aplicatia functioneaza!" << endl;
+// Functie ajutatoare la citrea textului cu spatii
+void citesteText(string& variabila) {
+    if (cin.peek() == '\n') cin.ignore(); 
+    getline(cin, variabila);
 }
 
 int main() {
-    afiseazaMeniu();
+    Catalog catalog; // Obiectul principal
+    int optiune = 0;
 
-    // TEST: crearea unui student fictiv sa vedem dca merge clasa
-    cout << "\n--- Testare Clasa Student ---" << endl;
-    
-    Student s1("Popescu", "Ion");
-    s1.adaugaNota(8);
-    s1.adaugaNota(10);
-    s1.adaugaNota(9);
-    
-    // testare validarea (nota gresita)
-    s1.adaugaNota(15); 
+    while (optiune != 4) {
+        cout << "\n=== CATALOG SCOLAR ===" << endl;
+        cout << "1. Adauga Student" << endl;
+        cout << "2. Adauga Nota unui student" << endl;
+        cout << "3. Afiseaza toti studentii" << endl;
+        cout << "4. Iesire" << endl;
+        cout << "Alege o optiune: ";
+        cin >> optiune;
 
-    s1.afiseazaSituatie();
+        switch (optiune) {
+            case 1: {
+                string n, p;
+                cout << "Nume: "; cin >> n;
+                cout << "Prenume: "; cin >> p;
+                catalog.adaugaStudent(n, p);
+                break;
+            }
+            case 2: {
+                string numeCautat;
+                cout << "Cauta student (nume sau prenume): ";
+                citesteText(numeCautat);
+
+                Student* s = catalog.cautaStudent(numeCautat);
+                if (s != nullptr) {
+                    int nota;
+                    cout << "Student gasit: " << s->getNumeComplet() << endl;
+                    cout << "Ce nota ii dai? ";
+                    cin >> nota;
+                    s->adaugaNota(nota);
+                } else {
+                    cout << "Eroare: Studentul nu a fost gasit!" << endl;
+                }
+                break;
+            }
+            case 3:
+                catalog.afiseazaCatalog();
+                break;
+            case 4:
+                cout << "La revedere!" << endl;
+                break;
+            default:
+                cout << "Optiune invalida!" << endl;
+        }
+    }
 
     return 0;
 }
