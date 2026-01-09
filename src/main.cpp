@@ -1,24 +1,23 @@
 #include <iostream>
 #include <string>
-#include <limits> // Pentru curatarea bufferului
-#include "Catalog.h"
+#include <limits> 
+#include "Catalog.h"  
 
 using namespace std;
 
-// Functie ajutatoare la citrea textului cu spatii
 void citesteText(string& variabila) {
     if (cin.peek() == '\n') cin.ignore(); 
     getline(cin, variabila);
 }
 
 int main() {
-    Catalog catalog; // Obiectul principal
+    Catalog catalog; 
     int optiune = 0;
 
     while (optiune != 4) {
-        cout << "\n=== CATALOG SCOLAR ===" << endl;
+        cout << "\n=== CATALOG SCOLAR (v1.0) ===" << endl;
         cout << "1. Adauga Student" << endl;
-        cout << "2. Adauga Nota unui student" << endl;
+        cout << "2. Adauga Nota" << endl;
         cout << "3. Afiseaza toti studentii" << endl;
         cout << "4. Iesire" << endl;
         cout << "Alege o optiune: ";
@@ -34,7 +33,7 @@ int main() {
             }
             case 2: {
                 string numeCautat;
-                cout << "Cauta student (nume sau prenume): ";
+                cout << "Cauta student: ";
                 citesteText(numeCautat);
 
                 Student* s = catalog.cautaStudent(numeCautat);
@@ -44,6 +43,9 @@ int main() {
                     cout << "Ce nota ii dai? ";
                     cin >> nota;
                     s->adaugaNota(nota);
+                    
+                    catalog.salveazaModificari(); 
+                    
                 } else {
                     cout << "Eroare: Studentul nu a fost gasit!" << endl;
                 }
@@ -59,6 +61,5 @@ int main() {
                 cout << "Optiune invalida!" << endl;
         }
     }
-
     return 0;
 }

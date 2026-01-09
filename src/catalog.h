@@ -1,45 +1,51 @@
 #pragma once
 #include <vector>
 #include <iostream>
-#include <algorithm> // pentru functii de cautare
+#include <algorithm>
 #include "Student.h"
+#include "FileManager.h" // Avem nevoie de asta pentru salvare
 
 using namespace std;
 
 class Catalog {
 private:
-    vector<Student> studenti; // aici se tin toti studentii
+    vector<Student> studenti;
+    FileManager fileManager; 
 
 public:
-    // 1. adaugam un student nou in lista
+    // Constructorul: Incarca datele cand porneste programul
+    Catalog() : fileManager("studenti.csv") {
+        studenti = fileManager.incarcaDate();
+    }
+
     void adaugaStudent(string nume, string prenume) {
         Student s(nume, prenume);
         studenti.push_back(s);
-        cout << " -> Studentul " << nume << " " << prenume << " a fost adaugat cu succes!" << endl;
+        salveazaModificari(); // Salvam automat
+        cout << " -> Studentul " << nume << " " << prenume << " a fost adaugat!" << endl;
     }
 
-    // 2. afisam toti studentii
     void afiseazaCatalog() {
         if (studenti.empty()) {
-            cout << "Nu exista studenti in catalog inca." << endl;
+            cout << "Nu exista studenti in catalog." << endl;
             return;
         }
-
         cout << "\n--- LISTA STUDENTI ---" << endl;
         for (const auto& s : studenti) {
-            s.afiseazaSituatie(); // functia din Student.h
+            s.afiseazaSituatie();
         }
-        cout << "----------------------" << endl;
     }
 
-    // 3. se cauta un student ca sa ii punem note
-    // se returneaza un pointer (*) ca sa putem modifica studentul original
     Student* cautaStudent(string numeCautat) {
         for (auto& s : studenti) {
             if (s.getNumeComplet().find(numeCautat) != string::npos) {
-                return &s; // returnam adresa studentului
+                return &s;
             }
         }
         return nullptr;
+    }
+
+    void salveazaModificari() {
+        fileManager.salveazaDate(studenti);
     }
 };

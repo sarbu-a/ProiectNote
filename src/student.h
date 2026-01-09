@@ -53,4 +53,18 @@ public:
         }
         cout << endl;
     }
+    // Metoda care returneaza datele studentului formatate pentru CSV
+    // Format: Nume,Prenume,Nota1,Nota2,Nota3...
+    string toCSV() const {
+        string linie = nume + "," + prenume;
+        for (int n : note) {
+            linie += "," + to_string(n);
+        }
+        return linie;
+    }
+
+    // Metoda ca sa putem reconstrui notele cand citim din fisier
+    void setNote(const vector<int>& noteNoi) {
+        note = noteNoi;
+    }
 };
