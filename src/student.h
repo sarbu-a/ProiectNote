@@ -1,9 +1,10 @@
-#pragma once // Previne includerea fisierului de mai multe ori
+#pragma once 
 #include <string>
 #include <vector>
-#include <numeric> // Pentru calculul mediei
+#include <map> 
+#include <numeric> 
 #include <iostream>
-#include <iomanip> // Pentru o afisarea mai frumoasa (setprecision)
+#include <iomanip> 
 
 using namespace std;
 
@@ -11,60 +12,58 @@ class Student {
 private:
     string nume;
     string prenume;
-    vector<int> note; // Vector dinamic pentru stocarea notelor (1-10)
+    map<string, vector<int>> notePeMaterii; // Materie -> Lista Note
 
 public:
-    // Constructor: se apeleaza cand se creaza un student nou
     Student(string n, string p) : nume(n), prenume(p) {}
 
-    // Metoda pentru adaugarea unei note
-    void adaugaNota(int nota) {
+    string getNume() const { return nume; }
+    string getPrenume() const { return prenume; }
+    string getNumeComplet() const { return nume + " " + prenume; }
+
+    // Adaugam nota la o materie specifica
+    void adaugaNota(string materie, int nota) {
         if (nota >= 1 && nota <= 10) {
-            note.push_back(nota);
+            notePeMaterii[materie].push_back(nota);
         } else {
-            cout << "Eroare: Nota " << nota << " nu este valida (trebuie 1-10)!" << endl;
+            cout << "Eroare: Nota trebuie sa fie intre 1-10!" << endl;
         }
     }
 
-    // Metoda pentru calculul mediei
-    double calculeazaMedia() const {
-        if (note.empty()) return 0.0;
-        
-        double suma = 0;
-        for (int n : note) {
-            suma += n;
+    const map<string, vector<int>>& getNoteMap() const {
+        return notePeMaterii;
+    }
+
+    double getMediaGenerala() const {
+        if (notePeMaterii.empty()) return 0.0;
+        double sumaMedii = 0;
+        int numarMaterii = 0;
+
+        for (auto const& [materie, note] : notePeMaterii) {
+            if (note.empty()) continue;
+            double suma = 0;
+            for (int n : note) suma += n;
+            sumaMedii += (suma / note.size());
+            numarMaterii++;
         }
-        return suma / note.size();
+        return (numarMaterii == 0) ? 0.0 : (sumaMedii / numarMaterii);
     }
 
-    // Getters - functii sa putem citi datele private
-    string getNumeComplet() const {
-        return nume + " " + prenume;
-    }
-
-    // Afisarea detaliilor
     void afiseazaSituatie() const {
-        cout << "Student: " << getNumeComplet() << " | Media: " 
-             << fixed << setprecision(2) << calculeazaMedia()
-             << " | Note: ";
-        
-        for (int n : note) {
-            cout << n << " ";
+        cout << "Student: " << getNumeComplet() << endl;
+        if (notePeMaterii.empty()) {
+            cout << "  - Nu are note inregistrate." << endl;
+            return;
         }
-        cout << endl;
-    }
-    // Metoda care returneaza datele studentului formatate pentru CSV
-    // Format: Nume,Prenume,Nota1,Nota2,Nota3...
-    string toCSV() const {
-        string linie = nume + "," + prenume;
-        for (int n : note) {
-            linie += "," + to_string(n);
+        for (auto const& [materie, note] : notePeMaterii) {
+            cout << "  * " << materie << ": ";
+            double suma = 0;
+            for (int n : note) { cout << n << " "; suma += n; }
+            if (!note.empty())
+                cout << "| Media: " << fixed << setprecision(2) << (suma / note.size());
+            cout << endl;
         }
-        return linie;
-    }
-
-    // Metoda ca sa putem reconstrui notele cand citim din fisier
-    void setNote(const vector<int>& noteNoi) {
-        note = noteNoi;
+        cout << "  => Media Generala: " << getMediaGenerala() << endl;
+        cout << "-----------------------------------" << endl;
     }
 };
