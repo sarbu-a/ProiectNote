@@ -2,6 +2,7 @@
 #include <fstream>
 #include <vector>
 #include <sstream>
+#include <map>
 #include "Student.h"
 
 using namespace std;
@@ -13,61 +14,58 @@ private:
 public:
     FileManager(string fisier) : numeFisier(fisier) {}
 
-    // Salvarea datelor in fisier
     void salveazaDate(const vector<Student>& studenti) {
-        ofstream fisier(numeFisier); 
-        
-        if (!fisier.is_open()) {
-            cout << "Eroare: Nu pot deschide fisierul pentru scriere!" << endl;
-            return;
-        }
+        ofstream fisier(numeFisier);
+        if (!fisier.is_open()) return;
 
         for (const auto& s : studenti) {
-            fisier << s.toCSV() << endl; // Scrierea fiecarui student pe un rand
+            if (s.getNoteMap().empty()) {
+                fisier << s.getNume() << "," << s.getPrenume() << ",NONE" << endl;
+                continue;
+            }
+            for (auto const& [materie, note] : s.getNoteMap()) {
+                fisier << s.getNume() << "," << s.getPrenume() << "," << materie;
+                for (int n : note) fisier << "," << n;
+                fisier << endl;
+            }
         }
-        
         fisier.close();
-        cout << "Datele au fost salvate cu succes in " << numeFisier << endl;
     }
 
-    // Citirea datelor din fisier
     vector<Student> incarcaDate() {
-        vector<Student> studentiIncarcati;
-        ifstream fisier(numeFisier); 
-
-        if (!fisier.is_open()) {
-            cout << "Nu exista date salvate anterior. Se porneste de la zero." << endl;
-            return studentiIncarcati; // Returnam lista goala
-        }
+        vector<Student> listaStudenti;
+        ifstream fisier(numeFisier);
+        if (!fisier.is_open()) return listaStudenti;
 
         string linie;
         while (getline(fisier, linie)) {
             stringstream ss(linie);
-            string segment;
-            vector<string> date;
+            string segment, nume, prenume, materie;
+            vector<string> data;
 
-            // Spargem linia dupa virgula
-            while (getline(ss, segment, ',')) {
-                date.push_back(segment);
-            }
+            while (getline(ss, segment, ',')) data.push_back(segment);
+            if (data.size() < 3) continue;
 
-            // Daca avem cel putin Nume si Prenume
-            if (date.size() >= 2) {
-                Student s(date[0], date[1]); // Nume, Prenume
-                
-                // Restul sunt note
-                for (size_t i = 2; i < date.size(); i++) {
-                    try {
-                        s.adaugaNota(stoi(date[i])); // Convertim din text in numar
-                    } catch (...) {
-                        // Ignoram erorile de conversie daca fisierul e corupt
-                    }
+            nume = data[0]; prenume = data[1]; materie = data[2];
+
+            Student* studentExistent = nullptr;
+            for (auto& s : listaStudenti) {
+                if (s.getNume() == nume && s.getPrenume() == prenume) {
+                    studentExistent = &s;
+                    break;
                 }
-                studentiIncarcati.push_back(s);
+            }
+            if (studentExistent == nullptr) {
+                listaStudenti.push_back(Student(nume, prenume));
+                studentExistent = &listaStudenti.back();
+            }
+            if (materie != "NONE") {
+                for (size_t i = 3; i < data.size(); i++) {
+                    try { studentExistent->adaugaNota(materie, stoi(data[i])); } catch (...) {}
+                }
             }
         }
         fisier.close();
-        cout << "Au fost incarcati " << studentiIncarcati.size() << " studenti din fisier." << endl;
-        return studentiIncarcati;
+        return listaStudenti;
     }
 };

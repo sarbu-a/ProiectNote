@@ -2,6 +2,7 @@
 #include <vector>
 #include <iostream>
 #include <algorithm>
+#include <map>
 #include "Student.h"
 #include "FileManager.h"
 
@@ -18,90 +19,51 @@ public:
     }
 
     void adaugaStudent(string nume, string prenume) {
-        Student s(nume, prenume);
-        studenti.push_back(s);
-        salveazaModificari();
-        cout << " -> Studentul " << nume << " " << prenume << " a fost adaugat!" << endl;
-    }
-
-    void afiseazaCatalog() {
-        if (studenti.empty()) {
-            cout << "Nu exista studenti in catalog." << endl;
+        if (cautaStudent(nume + " " + prenume) != nullptr) {
+            cout << "Eroare: Studentul exista deja!" << endl;
             return;
         }
-        cout << "\n--- LISTA STUDENTI ---" << endl;
-        for (const auto& s : studenti) {
-            s.afiseazaSituatie();
-        }
+        studenti.push_back(Student(nume, prenume));
+        salveazaModificari();
+        cout << " -> Student adaugat." << endl;
     }
 
     Student* cautaStudent(string numeCautat) {
         for (auto& s : studenti) {
-            if (s.getNumeComplet().find(numeCautat) != string::npos) {
-                return &s;
-            }
+            if (s.getNumeComplet().find(numeCautat) != string::npos) return &s;
         }
         return nullptr;
     }
 
-    void salveazaModificari() {
-        fileManager.salveazaDate(studenti);
+    void afiseazaCatalog() {
+        cout << "\n=== SITUATIE SCOLARA COMPLETA ===" << endl;
+        for (const auto& s : studenti) s.afiseazaSituatie();
     }
 
-    // --- NOILE FUNCȚII PENTRU STATISTICI (Aici e noutatea) ---
-
-    // 1. Media Generala a Clasei
-    void afiseazaMediaClasei() {
-        if (studenti.empty()) {
-            cout << "Nu sunt date pentru statistici." << endl;
-            return;
-        }
-        double sumaTotala = 0;
-        int contor = 0;
+    void salveazaModificari() { fileManager.salveazaDate(studenti); }
+    void afiseazaTopMaterii() {
+        map<string, pair<double, int>> statistici; 
         for (const auto& s : studenti) {
-            double m = s.calculeazaMedia();
-            if (m > 0) {
-                sumaTotala += m;
-                contor++;
+            for (auto const& [materie, note] : s.getNoteMap()) {
+                for (int n : note) {
+                    statistici[materie].first += n;
+                    statistici[materie].second++;
+                }
             }
         }
-        if (contor > 0)
-            cout << "Media generala a clasei: " << fixed << setprecision(2) << (sumaTotala / contor) << endl;
-        else
-            cout << "Niciun student nu are note calculate." << endl;
-    }
+        if (statistici.empty()) { cout << "Nu exista date pentru statistici." << endl; return; }
 
-    // 2. Premiantul (Cea mai mare medie)
-    void afiseazaPremiantul() {
-        if (studenti.empty()) return;
-        const Student* best = nullptr;
-        double maxMedie = -1.0;
+        string bestM = "", worstM = "";
+        double bestAv = -1.0, worstAv = 11.0;
 
-        for (const auto& s : studenti) {
-            double m = s.calculeazaMedia();
-            if (m > maxMedie) {
-                maxMedie = m;
-                best = &s;
-            }
+        cout << "\n--- Statistici pe Materii ---" << endl;
+        for (auto const& [m, date] : statistici) {
+            double medie = date.first / date.second;
+            cout << "Materie: " << m << " | Medie: " << fixed << setprecision(2) << medie << endl;
+            if (medie > bestAv) { bestAv = medie; bestM = m; }
+            if (medie < worstAv) { worstAv = medie; worstM = m; }
         }
-        
-        if (best != nullptr && maxMedie > 0)
-            cout << "Premiantul: " << best->getNumeComplet() << " (Media " << maxMedie << ")" << endl;
-        else
-            cout << "Nu exista note pentru a determina premiantul." << endl;
-    }
-
-    // 3. Corigentii (Medie sub 5)
-    void afiseazaCorigenti() {
-        cout << "\n--- Lista Corigenti (Medie < 5) ---" << endl;
-        bool gasit = false;
-        for (const auto& s : studenti) {
-            double m = s.calculeazaMedia();
-            if (m > 0 && m < 5.0) {
-                cout << " - " << s.getNumeComplet() << ": " << m << endl;
-                gasit = true;
-            }
-        }
-        if (!gasit) cout << "Nu exista corigenti! Bravo!" << endl;
+        cout << "\n[+] Cea mai buna materie: " << bestM << " (" << bestAv << ")" << endl;
+        cout << "[-] Cea mai slaba materie: " << worstM << " (" << worstAv << ")" << endl;
     }
 };
